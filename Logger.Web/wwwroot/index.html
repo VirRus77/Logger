@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <title>Логгер</title>
+    <style>
+        #chart { max-height: 75%; }
+    </style>
+    <script src="js/jquery.js"></script>
+    <script src="js/chart.js"></script>
+    <script language="javascript">
+        const chart_config = {
+            type: 'line',
+            data: {
+                //labels: [65, 59, 80, 81, 56, 55, 40, 41],
+                datasets: [
+                    {
+                        label: "Температура",
+                        //data: [65, 59, 80, 81, 56, 55, 40, null],
+                        borderColor: '#36A2EB',
+                        backgroundColor: '#9BD0F5',
+                        //fillColor: `rgba(${parseInt(color_first.R, 16)},${parseInt(color_first.G, 16)},${parseInt(color_first.B, 16)},0.2)`,
+                        //strokeColor: `rgba(${parseInt(color_first.R, 16)},${parseInt(color_first.G, 16)},${parseInt(color_first.B, 16)},1)`,
+                        //pointColor: `rgba(${parseInt(color_first.R, 16)},${parseInt(color_first.G, 16)},${parseInt(color_first.B, 16)},1)`,
+                        //pointStrokeColor: `#${color_first.R}${color_first.G}${color_first.B}`,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'График температуры'
+                    }
+                }
+            },
+        };
+
+        var _lastId = -1;
+        var _timer = null;
+        var _data = null;
+
+        var _logStateElement = null;
+        var _chart = null;
+        var _maxPoints = 10;
+
+        function onStart() {
+            _logStateElement = $('#log-state')[0];
+            const canvas = $('#chart')[0].getContext("2d");
+            _chart = new Chart(canvas, chart_config);
+            getChartData();
+            //_timer = setInterval(() => getChartData(), 2000);
+        }
+
+        function addData(values) {
+            const chartData = _chart.data;
+            values.forEach((value) => {
+                chartData.labels.push(value.id);
+                chartData.datasets.forEach((dataset) => {
+                    dataset.data.push(value.value);
+                });
+            });
+
+            while (chartData.labels.length > _maxPoints) {
+                chartData.labels.shift();
+            }
+
+            chartData.datasets.forEach((dataset) => {
+                while (dataset.data.length > _maxPoints) {
+                    dataset.data.shift();
+                }
+            });
+            //chart.data.labels.push(label);
+            //chart.data.datasets.forEach((dataset) => {
+            //    dataset.data.push(newData);
+            //});
+
+            _chart.update();
+        }
+
+        function setState(isError, message = null) {
+            if (message === null) {
+                _logStateElement.style.display = "none";
+                return;
+            }
+
+            if (isError === true) {
+                _logStateElement.style.color = "red";
+            } else if (isError === false) {
+                _logStateElement.style.color = "green";
+            } else if (isError === null) {
+                _logStateElement.style.color = null;
+            }            
+
+            _logStateElement.innerHTML = message.replace(/[\r]?\n/g, "<br/>");
+            _logStateElement.style.display = "block";
+        }
+
+        function showError(jqXHR, exception) {
+            let msg = '';
+            if (jqXHR.status === 0) {
+                msg = 'Not connect.\n Verify Network.';
+            } else if (jqXHR.status === 404) {
+                msg = 'Requested page not found. [404]';
+            } else if (jqXHR.status === 500) {
+                msg = 'Internal Server Error [500].';
+            } else if (exception === 'parsererror') {
+                msg = 'Requested JSON parse failed.';
+            } else if (exception === 'timeout') {
+                msg = 'Time out error.';
+            } else if (exception === 'abort') {
+                msg = 'Ajax request aborted.';
+            } else {
+                msg = 'Uncaught Error.\n' + jqXHR.responseText;
+            }
+
+            setState(true, msg);
+        }
+
+        function getChartData() {
+            if (_timer != null) {
+                clearInterval(_timer);
+                _timer = null;
+            }
+
+            $.ajax({
+                url: 'api/data/get_data', /* Куда отправить запрос */
+                type: 'get', /* Метод запроса (post или get) */
+                dataType: 'json', /* Тип данных в ответе (xml, json, script, html). */
+                data: { lastId: _lastId },     /* Данные передаваемые в массиве */
+                contentType: "application/json; charset=utf-8", /* Тип данных в запросе (полный MIME). */
+                error: function (jqXHR, exception) {
+                    showError(jqXHR, exception);
+
+                    _timer = setInterval(() => getChartData(), 2000);
+                },
+                /* функция которая будет выполнена после успешного запроса.  */
+                success: function (payload) {
+                    //const logElement = $('#log-text')[0];
+
+                    if (payload === null || payload.data === null || payload.data.length <= 0) {
+                        return;
+                    }
+                    const data = payload.data;
+
+                    //logElement.rows = Math.min(data.length, 10);
+                    addData(data.filter((v) => (_lastId === null) || (_lastId != null && v.id > _lastId)));
+                    _lastId = data[data.length - 1].id;
+                    setState(false, `Last Id: ${_lastId}`);
+                    
+
+                    //logElement.value = data
+                    //    .map((v) => `${v.id} ${v.value}`)
+                    //    .join("\n");
+
+                    //logElement.scrollTop = logElement.scrollHeight;
+                    _timer = setInterval(() => getChartData(), 2000);
+                },
+            });
+        }
+    
+    
+    </script>
+</head>
+<body onload="onStart();">
+<canvas id="chart"></canvas>
+<br/>
+<!--<textarea id="log-text" readonly="readonly"></textarea>
+<br/>-->
+<input type="button" value="Загрузить csv" onclick="window.open('api/data/get_file');"/>
+<br/>
+<span id="log-state" style="display: none;"></span>
+</body>
+</html>

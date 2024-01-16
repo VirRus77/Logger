@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\css\" />
+    <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="jQuery" Version="3.6.4" GeneratePathProperty="true" />
+    <PackageReference Include="Chart.js" Version="3.7.1" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(PkgjQuery)/Content/Scripts/jquery-3.6.4.min.js">
+      <Link>wwwroot/js/jquery.js</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(PkgChart_js)/Content/Scripts/chart.min.js">
+      <Link>wwwroot/js/chart.js</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\favicon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!--<Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
+    <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
+  </Target>-->
+
+</Project>
