@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -8,12 +8,12 @@ using Microsoft.Extensions.Hosting;
 namespace Logger.Web
 {
     /// <summary>
-    /// Точка входа в приложение.
+    /// РўРѕС‡РєР° РІС…РѕРґР° РІ РїСЂРёР»РѕР¶РµРЅРёРµ.
     /// </summary>
     public class Program
     {
         /// <summary>
-        /// Точка входа.
+        /// РўРѕС‡РєР° РІС…РѕРґР°.
         /// </summary>
         /// <param name="args"></param>
         public static void Main(string[] args)

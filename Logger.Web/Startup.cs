@@ -1,4 +1,4 @@
-using Logger.Web.Controllers;
+п»їusing Logger.Web.Controllers;
 using Logger.Web.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 namespace Logger.Web
 {
     /// <summary>
-    /// Настройка Web.
+    /// РќР°СЃС‚СЂРѕР№РєР° Web.
     /// </summary>
     public class Startup
     {
